@@ -1,0 +1,85 @@
+﻿@*@model IEnumerable<Vidly.Models.Customer>*@
+
+@{
+    ViewBag.Title = "Movies";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Movies</h2>
+
+<table id="movies" class="table table-bordered table-hover table-responsive">
+    <thead>
+        <tr>
+            <th>Movie</th>
+            <th>Genre</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @*@foreach (var customer in Model)
+            {
+                <tr>
+                    <td>@Html.ActionLink(customer.Name, "Details", new { id = customer.Id })</td>
+                    <td>@Html.DisplayFor(modelItem => customer.MembershipType.Name)</td>
+                    <td><button data-customer-id="@customer.Id" class="btn-link js-delete">Delete</button></td>
+                </tr>
+            }*@
+    </tbody>
+</table>
+
+
+@section scripts{
+    @*<script src="~/Scripts/DataTables/datatables.js"></script>*@
+
+    <script>
+        $(document).ready(function () {
+            //$("#customers .js-delete").on("click", function () {
+
+            let table = $("#movies").DataTable({
+                ajax: {
+                    url: "/api/Movies",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        data: "name",
+                        render: function (data, type, movie) {
+                            return `<a href='@Url.Action("Edit", "Customer")/${movie.id}'>${data}</a>`;
+                        }
+                    },
+                    {
+                        data: "genre.name",
+                    },
+                    {
+                        data: "id",
+                        render: function (data, type, movie) {
+                            return `<button class="btn-link js-delete" data-customer-id="${data}">Delete</button>`;
+                        }
+                    },
+                ]
+            });
+
+            $("#movies").on("click", ".js-delete", function () {
+                let button = $(this);
+                let id = button.attr("data-customer-id");
+                bootbox.confirm("Are you sure you want to delete this movie?", function (result) {
+                    if (result) {
+                        $.ajax({
+                            method: "DELETE",
+                            url: "/api/Movies/" + id,
+                            success: function () {
+                                table.row(button.parents("tr"))
+                                    .fadeOut()
+                                    //.remove(1000)
+                                    .draw();
+
+                                //button.parents("tr").remove();
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
