@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity.Validation;
+using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 using Vidly.Models;
 using Vidly.ViewModels;
@@ -13,67 +11,80 @@ namespace Vidly.Controllers
     public class MoviesController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public MoviesController() => _context = new ApplicationDbContext();
-        protected override void Dispose(bool disposing) => _context.Dispose();
+        public MoviesController()
+        {
+            _context = ApplicationDbContext.Create();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _context.Dispose();
+        }
 
         [HttpGet]
         public ActionResult Index()
         {
-            List<Movie> movies = _context.Movies.Include("Genre").ToList();
-            return View(movies);
+            ApplicationUser applicationUser = new ApplicationUser()
+            {
+
+            };
+            /** Eager Loading*/
+            List<Movie> movies = _context.Movies.Include(m => m.Genre).ToList();
+
+            if (User.IsInRole(RoleName.CanManageMovies))
+            {
+                return View("Index");
+            }
+
+            return View("ReadOnlyList");
         }
 
         public ActionResult Details(int id)
         {
-            _context.Movies.Include("Genre").SingleOrDefault(m => m.Id == id);
-            return View();
+            Movie movie = _context.Movies.Include(m => m.Genre).SingleOrDefault(m => m.Id == id);
+            return View(movie);
         }
 
         [HttpGet]
+        [Authorize(Roles = RoleName.CanManageMovies)]
         public ActionResult New()
         {
-
-            var genres = _context.Genres.ToList();
-            var viewModel = new MovieFormViewModel()
+            List<Genre> genres = _context.Genres.ToList();
+            MovieFormViewModel viewModel = new MovieFormViewModel()
             {
-                Genres = genres
+                Genre = genres
             };
             return View("MovieForm", viewModel);
-
-
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
         public ActionResult New(Movie movie)
         {
-            var genres = _context.Genres.ToList();
-            var viewModel = new MovieFormViewModel(movie)
+            List<Genre> genres = _context.Genres.ToList();
+            MovieFormViewModel viewModel = new MovieFormViewModel(movie)
             {
-                Genres = genres
+                Genre = genres
             };
-            try
-            {
-                using (_context)
-                {
-                    _context.Movies.Add(movie);
-                    _context.SaveChanges();
-                }
-            }
-            catch (Exception ex) { Console.WriteLine(ex.Message); }
-            return View("MovieForm", viewModel);
+            _context.Movies.Add(movie);
+            _context.SaveChanges();
+            //return View("MovieForm", viewModel);
+            return View("Index", viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id)
         {
-            var movie = _context.Movies/*.Include("Genres")*/.Single(m => m.Id == id);
+            Movie movie = _context.Movies/*.Include("Genre")*/.Single(m => m.Id == id);
             if (movie == null)
-                return HttpNotFound();
-            var viewModel = new MovieFormViewModel(movie)
             {
-                Genres = _context.Genres.ToList()
+                return HttpNotFound();
+            }
+
+            MovieFormViewModel viewModel = new MovieFormViewModel(movie)
+            {
+                Genre = _context.Genres.ToList()
             };
             return View("MoviesForm", viewModel);
             /**
@@ -81,21 +92,21 @@ namespace Vidly.Controllers
             if (movie == null) return HttpNotFound();
             var viewModel = new MovieFormViewModel(movie)
             {
-                Genres = _context.Genres.ToList()
+                Genre = _context.Genre.ToList()
             };
             return View("MovieForm", viewModel);
-    */
+            */
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Save(Movie movie)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid == false)
             {
-                var viewModel = new MovieFormViewModel(movie)
+                MovieFormViewModel viewModel = new MovieFormViewModel(movie)
                 {
-                    Genres = _context.Genres.ToList()
+                    Genre = _context.Genres.ToList()
                 };
                 return View("MovieForm", viewModel);
             }
@@ -120,11 +131,11 @@ namespace Vidly.Controllers
 
         public ActionResult Random()
         {
-            var movie = new Movie { Name = "Shrek!" };
-            var customers = new List<Customer>
-            {new Customer { Name = "Customer 1", Id = 1 },new Customer { Name = "Customer 2", Id = 2 },};
+            Movie movie = new Movie { Name = "Shrek!" };
+            List<Customer> customers = new List<Customer>
+            {new Customer { Name = "Customer 1", /*Id = 1*/ },new Customer { Name = "Customer 2", /*Id = 2 */},};
 
-            var viewModel = new RandomMovieViewModel
+            RandomMovieViewModel viewModel = new RandomMovieViewModel
             {
                 Movie = movie,
                 Customers = customers

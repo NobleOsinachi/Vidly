@@ -12,7 +12,7 @@ namespace Vidly.Controllers
         private readonly ApplicationDbContext _context;
         public CustomersController()
         {
-            _context = new ApplicationDbContext();
+            _context = ApplicationDbContext.Create();
         }
 
         //dispose this disposable context properly
@@ -24,9 +24,9 @@ namespace Vidly.Controllers
 
         [HttpGet]
         public ActionResult New()
-        {
-            //create dropdown for MembershipType
-            var membershipTypes = _context.MembershipTypes.ToList();
+        {            
+            /** create dropdown for MembershipType */
+            ICollection<MembershipType> membershipTypes = _context.MembershipTypes.ToList();
             var viewModel = new CustomerFormViewModel
             {
                 Customer = new Customer(),
@@ -61,6 +61,7 @@ namespace Vidly.Controllers
             return RedirectToAction("Index", "Customers");
         }
 
+        [Authorize]
         // GET: Customers
         public ActionResult Index()
         {

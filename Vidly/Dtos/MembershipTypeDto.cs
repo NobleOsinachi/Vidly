@@ -6,7 +6,7 @@ namespace Vidly.Dtos
 {
     public class MembershipTypeDto // : MembershipType
     {
-        public int Id { get; set; }
+        public int Id { get; private set; }
         public string Name { get; set; }
     }
 }

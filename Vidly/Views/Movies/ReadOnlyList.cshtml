@@ -1,0 +1,49 @@
+﻿@*@model IEnumerable<Vidly.Models.Customer>*@
+
+@{
+    ViewBag.Title = "Movies";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Movies</h2>
+
+<table id="movies" class="table table-bordered table-hover table-responsive">
+    <thead>
+        <tr>
+            <th>Movie</th>
+            <th>Genre</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @*@foreach (var customer in Model)
+            {
+                <tr>
+                    <td>@Html.ActionLink(customer.Name, "Details", new { id = customer.Id })</td>
+                    <td>@Html.DisplayFor(modelItem => customer.MembershipType.Name)</td>
+                    <td><button data-customer-id="@customer.Id" class="btn-link js-delete">Delete</button></td>
+                </tr>
+            }*@
+    </tbody>
+</table>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            let table = $("#movies").DataTable({
+                ajax: {
+                    url: "/api/Movies",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        data: "name",                        
+                    },
+                    {
+                        data: "genre.name",
+                    }
+                ]
+            });
+        });
+    </script>
+}

@@ -14,17 +14,21 @@ namespace Vidly.Controllers.Api
     {
         #region DbContext
         private readonly ApplicationDbContext _context;
-        public MoviesController() => _context = new ApplicationDbContext();
+        public MoviesController() => _context = ApplicationDbContext.Create();
         protected override void Dispose(bool disposing) => _context.Dispose();
 
         #endregion
 
         // GET /api/Movies
         [HttpGet]
-        public IHttpActionResult GetMovies()
+        public IHttpActionResult GetMovies(string? query = null)
         {
-            var movieDtos = _context.Movies
-                .Include(m => m.Genre)
+            var moviesQuery = _context.Movies.Include(c => c.Genre)
+                .Where(m => m.NumberAvailable > 0);
+            if (!String.IsNullOrWhiteSpace(query))
+                moviesQuery = moviesQuery.Where(c => c.Name.Contains(query));
+
+            var movieDtos = moviesQuery
                 .ToList()
                 .Select(Mapper.Map<Movie, MovieDto>);
             return Ok(movieDtos);

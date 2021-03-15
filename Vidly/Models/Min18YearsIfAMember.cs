@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
-using Vidly.Models;
-using static Vidly.Models.MembershipType;
 
 namespace Vidly.Models
 {
     public class Min18YearsIfAMemberAttribute : ValidationAttribute
     {
-        
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
-        {            
+        {
             //First check the selected membership type
             var customer = (Customer)validationContext.ObjectInstance;
             //check the selected membership type
@@ -27,13 +21,24 @@ namespace Vidly.Models
                 return ValidationResult.Success;
             if (customer.BirthDate == null)
                 return new ValidationResult("Birthdate is required");
+            new DateTime(); 
 
-            
             //calc the age
             var age = DateTime.Today.Year - customer.BirthDate.Value.Year;
             return (age >= 18)
                 ? ValidationResult.Success
                 : new ValidationResult(@"Customer should be at least 18 years old to go on a membership.");
         }
+    }
+
+    public struct RoleName
+    {
+        public const string CanManageMovies = "CanManageMovies";
+    }
+    public enum Status : byte
+    {
+        Expired,
+        Active,
+        Deactivated,
     }
 }

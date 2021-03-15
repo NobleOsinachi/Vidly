@@ -1,0 +1,120 @@
+﻿
+@{
+    ViewBag.Title = "New Rental Form";
+}
+
+<form id="newRental">
+    <div class="form-group">
+        <label for="customer">Customer</label>
+        <div class="tt-container">
+            <input id="customer" class="form-control" type="text" name="customer" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="movie">Movie</label>
+        <div class="tt-container">
+            <input id="movie" class="form-control" type="search" name="movie" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 col-sm-4">
+            <ul id="movies" class="list-group"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary">Submit</button>
+        @*<input id="submit" class="btn btn-primary" type="submit" value="Submit" />*@
+    </div>
+</form>
+
+<link href="~/Content/alertify.css" rel="stylesheet" />
+<link href="~/Content/themes/default.min.css" rel="stylesheet" />
+@section scripts{
+    <script src="~/Scripts/alertify.js" async="async"></script>
+    <script src="~/Scripts/notify.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var vm = { customerId: 0, movieIds: [] };
+            function removeItem() {
+                vm.movieIds.splice();
+                alert();
+            };
+
+            const customers = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                remote: {
+                    url: "/api/customers?query=%QUERY",
+                    wildcard: "%QUERY"
+                }
+            });
+
+            $("#customer").typeahead({
+                minLength: 3,
+                highlight: true
+            }, {
+                    name: "customers",
+                    display: "name",
+                    source: customers
+                })
+                .on("typeahead:select", function (event, customer) {
+                    vm.customerId = customer.id;
+                });
+
+            const movies = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace("name"),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                remote: {
+                    url: "/api/movies?query=%QUERY",
+                    wildcard: "%QUERY"
+                }
+            });
+
+            $("#movie").typeahead({ minLength: 3, highlight: true },
+                {
+                    name: "movies", display: "name", source: movies
+                }).on("typeahead:select", function (event, movie) {
+                    const year = movie.releaseDate.split('-')[2];
+                    $("#movies").append(`<li class='alert list-group-item' data-movieId='${movie.id}'><i class="close" data-dismiss="alert" aria-label="close">×</i>${movie.name} (${year})</li>`);
+                    $("#movie").typeahead("val", "");
+                    vm.movieIds.push(movie.id);
+                });
+            $("ul").on("click", ".close", function () {
+                const movieId = $(this).parent(".alert").attr('data-movieId');
+                const start = vm.movieIds.indexOf(movieId);
+                vm.movieIds.splice(start, 1);
+            });
+            ////add validation
+            //$.validator.addMethod("atLeastOneMovie", function () {
+            //    return vm.movieIds.length > 0;
+            //}, "Please select at least one movie.");
+
+
+            $("#newRental").submit(function (event) {
+                event.preventDefault();
+                $.ajax({
+                    method: "POST",
+                    url: "/api/NewRentals",
+                    data: vm,
+                    success: function (res) {
+                         $.notify(res, { globalPosition: "top center", className: "success" });
+                        //alertify.alert(res);
+                        $("#customer").typeahead("val", "");
+                        $("#movie").typeahead("val", "");
+                        $("#movies").empty();
+                        vm = { customerId: 0, movieIds: [] };
+                    },
+                    error: function (res, error) {
+                        //alertify.alert(error.toUpperCase() + "! " + message);
+                        if (vm.movieIds.length == 0) {
+                            alertify.alert("Please select at least one movie.");
+                        }
+                         
+                        //if (res.responseJSON.message == undefined) alertify.alert(error.toUpperCase() + "! " + res);else alertify.alert(error.toUpperCase() + "! " + res.responseJSON.message);
+                    },
+                });
+            });
+        });
+    </script>
+}

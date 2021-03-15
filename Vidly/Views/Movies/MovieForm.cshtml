@@ -23,8 +23,8 @@
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(m => m.GenreId, "Membership Type")
-        @Html.DropDownListFor(m => m.GenreId, new SelectList(items: Model.Genres, dataValueField: "GenreId", dataTextField: "Name"), "--Select Genre--", new { @class = "form-control" })
+        @Html.LabelFor(m => m.GenreId, "Genre")
+        @Html.DropDownListFor(m => m.GenreId, new SelectList(items: Model.Genre, dataValueField: "Id", dataTextField: "Name"), "--Select Genre--", new { @class = "form-control" })
         @Html.ValidationMessageFor(m => m.GenreId)
     </div>
 
@@ -34,17 +34,14 @@
         @Html.ValidationMessageFor(m => m.NumberInStock)
     </div>
 
-
-    @*@Html.AntiForgeryToken()*@
-
-    @Html.HiddenFor(m => m.Id) @*@Html.Hidden("Movie.Id", (Model.Movie != null) ? Model.Id : 0)*@
+    @Html.HiddenFor(m => m.Id)
+    @*@Html.Hidden("Movie.Id", (Model.Movie != null) ? Model.Id : 0)*@
     @Html.AntiForgeryToken()
 
     <div class="form-group">
         <button type="submit" role="button" class="btn btn-primary">Save</button>
     </div>
 }
-
 
 @section scripts{
     @Scripts.Render("~/bundles/jqueryval")

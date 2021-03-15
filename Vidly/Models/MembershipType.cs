@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Vidly.Models
 {
     public class MembershipType
     {
         public byte Id { get; set; }
-        public string? Name { get; set; }
-        public short SignUpFee { get; set; }
+        public string Name { get; set; }
+        public decimal SignUpFee { get; set; }
         [Range(01, 12)]
         public byte DurationInMonths { get; set; }
         [Range(0, 100)]
         public byte DiscountRate { get; set; }
 
         //public virtual List<Customer> Customers { get; set; }
-        
+
 
         public static readonly byte Unknown = 0;
         public static readonly byte PayAsYouGo = 1;

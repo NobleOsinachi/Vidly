@@ -8,7 +8,6 @@ namespace Vidly.ViewModels
 {
     public class MovieFormViewModel
     {
-        public virtual ICollection<Genre> Genres { get; set; }
 
         public int? Id { get; set; }
 
@@ -16,7 +15,8 @@ namespace Vidly.ViewModels
         [StringLength(255)]
         public string Name { get; set; }
 
-        [ForeignKey("Genres")]
+        public virtual ICollection<Genre> Genre { get; set; }
+        [ForeignKey("Genre")]
         [Required]
         public byte? GenreId { get; set; }
 

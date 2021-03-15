@@ -6,12 +6,13 @@ namespace Vidly.Models
 {
     public class Customer
     {
-        public int Id { get; set; }
+        public int Id { get; private set; }
 
         [Required]
         [StringLength(255)]
         public string Name { get; set; }
 
+        [DataType(DataType.Date)]
         public bool IsSubscribedToNewsletter { get; set; }
 
         //associate a customer with MembershipType Navigation Property
